@@ -1,0 +1,27 @@
+    php-fpm-9001:
+        #build:
+        #    context: ./php-fpm
+        image: registry.cn-hangzhou.aliyuncs.com/qeeyi/php-fpm-pro
+        volumes_from:
+            - applications
+        volumes:
+            - ${PHP_FPM_INI_CONF}:/usr/local/etc/php/conf.d/site.ini
+            - ${PHP_FPM_POOL_CONF}:/usr/local/etc/php-fpm.d/site.pool.ini
+        expose:
+            - "9000"
+        networks:
+            - backend
+
+    php-fpm-9002:
+        #build:
+        #    context: ./php-fpm
+        image: registry.cn-hangzhou.aliyuncs.com/qeeyi/php-fpm-pro
+        volumes_from:
+            - applications
+        volumes:
+            - ${PHP_FPM_INI_CONF}:/usr/local/etc/php/conf.d/site.ini
+            - ${PHP_FPM_POOL_CONF}:/usr/local/etc/php-fpm.d/site.pool.ini
+        expose:
+            - "9000"
+        networks:
+            - backend

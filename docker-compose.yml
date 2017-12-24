@@ -1,0 +1,119 @@
+version: '2'
+
+services:
+
+
+### Application Code Container ######################
+
+    applications:
+        image: tianon/true
+        volumes:
+            - /htdocs/wwwroot:/var/www
+
+### Workspace Utilities Container ###########################
+
+    #workspace:
+    #    build:
+    #        context: ./workspace
+            #args:
+
+    #       dockerfile: "Dockerfile-${PHP_VERSION}"
+    #    volumes_from:
+    #        - applications
+        #volumes:
+            #- ${WORKSPACE_XDEBUG_CONF}:/etc/php/7.1/cli/conf.d/xdebug.ini
+            #- ${WORKSPACE_CRONTAB}:/etc/cron.d
+        #extra_hosts:
+            #- "dockerhost:${DOCKER_HOST_IP}"
+        #external_links:
+        #    - domainA_test1_1
+    #    tty: true
+    #    networks:
+    #        - frontend
+    #        - backend
+        #    - php-fpm
+
+
+### PHP-FPM Container #######################################
+
+    php-fpm:
+        #build:
+        #    context: ./php-fpm
+        image: registry.cn-hangzhou.aliyuncs.com/qeeyi/php-fpm-pro
+            #args:
+                #- INSTALL_MONGO=${PHP_FPM_INSTALL_MONGO}
+            #dockerfile: Dockerfile
+        volumes_from:
+            - applications
+        #container_name: fpm-service
+        volumes:
+            #- ${PHP_FPM_XDEBUG_CONF}:/etc/php/7.1/cli/conf.d/xdebug.ini
+            - ${PHP_FPM_INI_CONF}:/usr/local/etc/php/conf.d/site.ini
+            - ${PHP_FPM_POOL_CONF}:/usr/local/etc/php-fpm.d/site.pool.ini
+        expose:
+            - "9000"
+        #links:
+        #    - workspace
+        extra_hosts:
+            - "ss.xx.com:127.0.0.1"
+            - "tt.xx.com:127.0.0.1"
+            #- "dockerhost:${DOCKER_HOST_IP}"
+        #environment:
+            #- PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
+        networks:
+            - backend
+
+
+### MySQL Container #########################################
+    mysql-master:
+        build:
+            context: ./mysql
+        #container_name: master-mysql-service
+        environment:
+            - MYSQL_DATABASE=${MYSQL_DATABASE}
+            - MYSQL_USER=${MYSQL_USER}
+            - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+        volumes:
+            - /htdocs/wwwroot/mysql/master/data:/var/lib/mysql
+            - ./mysql/master/my.cnf:/etc/mysql/conf.d/my.cnf
+        ports:
+            - "33061:3306"
+        networks:
+            - backend
+
+### Nginx Container #######################################
+    nginx-api:
+        build:
+            context: ./nginx
+            #args:
+                #default fastcgi_pass对应
+                #- PHP_UPSTREAM=php-fpm
+        #container_name: nginx-api
+        volumes_from:
+            - applications
+        volumes:
+            - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
+            - ${NGINX_CONF}:/etc/nginx/nginx.conf
+            - ${NGINX_UPSTREAM_CONF}:/etc/nginx/conf.d/upstream.conf
+            - ./nginx/cert/:/etc/nginx/cert
+            #- /home/wwwroot/product:/var/www/html
+        #extra_hosts:
+        #    - "ss.xx.com:127.0.0.1"
+        #    - "tt.xx.com:127.0.0.1"
+        ports:
+            - "4431:80"
+            #- "${NGINX_HOST_HTTPS_PORT}:443"
+        depends_on:
+            - php-fpm
+        #    - php-fpm-9001
+        #    - php-fpm-9002
+        networks:
+            - frontend
+            - backend
+
+networks:
+    frontend:
+        driver: "bridge"
+    backend:
+        driver: "bridge"

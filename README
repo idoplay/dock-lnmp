@@ -1,0 +1,3 @@
+docker-compose run nginx /bin/bash
+
+docker-compose run php-fpm /bin/bash

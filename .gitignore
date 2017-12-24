@@ -1,0 +1,13 @@
+.DS_Store
+.settings
+.project
+.buildpath
+.idea
+.env
+.metadata
+.tags*
+*.db
+composer.lock
+*.log
+/logs
+/data
